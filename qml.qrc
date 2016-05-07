@@ -3,5 +3,6 @@
         <file>main.qml</file>
         <file>TimeEngine.js</file>
         <file>Style.qml</file>
+        <file>icon.png</file>
     </qresource>
 </RCC>

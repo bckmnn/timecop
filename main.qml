@@ -9,6 +9,23 @@ Window {
     width: 600;
     height: 200;
 
+    signal systray(int reason)
+
+    onSystray: {
+        console.log("systray "+reason)
+    }
+
+    function systrayActivated(reason){
+        console.log("systray "+reason)
+    }
+
+    flags:  Qt.Window | Qt.WindowStaysOnTopHint //| Qt.WindowTransparentForInput
+
+    Component.onCompleted: {
+        x = Screen.desktopAvailableWidth - width
+        y = Qt.platform.os === "osx" ? 0 : Screen.desktopAvailableHeight - height
+    }
+
     Settings{
         id: settings
         property int regularWorkingTimeHours: 7
@@ -52,33 +69,42 @@ Window {
 
     ProgressBar{
         id: progressRegular
-        style: style.progBarStyle
+        style: style.regularProgress
         value: calculator.currentProgressRegular
         x: 10
         y:10
         width: (parent.width - progressRegular.x*3) * calculator.regularTimePart
         Text{
             anchors.centerIn: parent
-            property string hours: (calculator.regHoursToGo*-1) < 10 ? "0"+(calculator.regHoursToGo*-1):(calculator.regHoursToGo*-1)
-            property string minutes: (calculator.regMinutesToGo*-1) < 10 ? "0"+(calculator.regMinutesToGo*-1):(calculator.regMinutesToGo*-1)
+            property string hours: calculator.regHoursToGo < 10 ? "0"+calculator.regHoursToGo:calculator.regHoursToGo
+            property string minutes: calculator.regMinutesToGo < 10 ? "0"+calculator.regMinutesToGo:calculator.regMinutesToGo
             text:  hours + ":" + minutes + " ("+(calculator.currentProgressRegular*100).toFixed()+"%)"
+            visible: progressExtra.value == 0
         }
     }
 
     ProgressBar{
         id: progressExtra
-        style: style.progBarStyle
+        style: style.extraProgress
         anchors.top: progressRegular.top
         anchors.left: progressRegular.right
         anchors.leftMargin: progressRegular.x
         value: calculator.currentProgressMax
         width: (parent.width - progressRegular.x*3) * calculator.extraTimePart
+        Text{
+            anchors.centerIn: parent
+            property string hours: calculator.extraHoursToGo < 10 ? "0"+calculator.extraHoursToGo:calculator.extraHoursToGo
+            property string minutes: calculator.extraMinutesToGo < 10 ? "0"+calculator.extraMinutesToGo:calculator.extraMinutesToGo
+            text:  hours + ":" + minutes + " ("+(calculator.currentProgressMax*100).toFixed()+"%)"
+            visible: progressRegular.value == 1
+        }
     }
 
     Timer{
-        interval: 1000*60
+        interval: 1000*30
         repeat: true
         running: true
+        triggeredOnStart: true
         onTriggered: {
             calculator.update()
         }
@@ -95,9 +121,11 @@ Window {
         property date maxTime: new Date()
         property int regMinutesToGo: 0
         property int regHoursToGo: 0
+        property int extraMinutesToGo: 0
+        property int extraHoursToGo: 0
 
         function update(){
-            TimeEngine.update(18,0,0);
+            TimeEngine.update(12,0,0);
             currentProgressRegular = TimeEngine.currentProgressRegular
             currentProgressMax = TimeEngine.currentProgressMax
             regularTimePart = TimeEngine.regularTimePart
@@ -105,18 +133,15 @@ Window {
             arrivalTime = TimeEngine.arrivalTime
             endTime = TimeEngine.calculatedEndTime
             maxTime = TimeEngine.calculatedMaxTime
-            regMinutesToGo = TimeEngine.diffNowEndTime.minutes
-            regHoursToGo = TimeEngine.diffNowEndTime.hours
+            regMinutesToGo = TimeEngine.diffNowEndTime.minutes <= 0 ?  TimeEngine.diffNowEndTime.minutes*-1 : 0
+            regHoursToGo = TimeEngine.diffNowEndTime.hours <= 0 ?  TimeEngine.diffNowEndTime.hours*-1 : 0
+            extraMinutesToGo = TimeEngine.diffNowMaxTime.minutes <= 0 ?  TimeEngine.diffNowMaxTime.minutes*-1 : 0
+            extraHoursToGo = TimeEngine.diffNowMaxTime.hours <= 0 ?  TimeEngine.diffNowMaxTime.hours*-1 : 0
         }
     }
 
     Style{
         id: style
     }
-
-    Component.onCompleted: {
-        calculator.update();
-    }
-
 
 }

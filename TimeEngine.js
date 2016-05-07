@@ -11,7 +11,6 @@ var extraTimePart;
 function update(hours, minutes, seconds){
     arrivalTime = new Date();
     arrivalTime.setHours(hours,minutes,seconds);
-    console.log("arrived at ",arrivalTime.toDateString(), arrivalTime.toTimeString());
 
     calculatedEndTime = new Date(arrivalTime.getTime());
     var endTimeHours = calculatedEndTime.getHours()+settings.regularWorkingTimeHours;
@@ -37,7 +36,6 @@ function update(hours, minutes, seconds){
     var extraMinutes = diffStartMaxTime.minutes + diffStartMaxTime.hours*60 - regularMinutes
     regularTimePart = regularMinutes / (regularMinutes+extraMinutes)
     extraTimePart = extraMinutes / (regularMinutes+extraMinutes)
-    console.log("prozente", regularTimePart, extraTimePart);
 
     var now = new Date();
 
@@ -56,9 +54,6 @@ function update(hours, minutes, seconds){
         currentProgressRegular = 1;
     }
 
-    console.log("done at ",calculatedEndTime.toDateString(), calculatedEndTime.toTimeString());
-    console.log("maximum at ",calculatedMaxTime.toDateString(), calculatedMaxTime.toTimeString());
-    console.log("progress reg: ", currentProgressRegular, " progress max: ", currentProgressMax)
 }
 
 function getPercent(start, end, value){
