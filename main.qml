@@ -5,18 +5,14 @@ import Qt.labs.settings 1.0
 import "TimeEngine.js" as TimeEngine
 
 Window {
+    id: window
     visible: true
     width: 600;
     height: 200;
 
-    signal systray(int reason)
-
-    onSystray: {
-        console.log("systray "+reason)
-    }
-
     function systrayActivated(reason){
         console.log("systray "+reason)
+        window.show()
     }
 
     flags:  Qt.Window | Qt.WindowStaysOnTopHint //| Qt.WindowTransparentForInput

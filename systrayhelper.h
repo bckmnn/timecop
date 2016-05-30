@@ -18,16 +18,15 @@ signals:
 
 public slots:
     void activatedSystray(const QSystemTrayIcon::ActivationReason &reason) {
-         qDebug() << "reason " << reason;
         switch (reason) {
         case QSystemTrayIcon::DoubleClick:
-            qDebug() << "context";
+            if(m_rootObject != 0){
+                QMetaObject::invokeMethod(m_rootObject, "systrayActivated", Q_ARG(QVariant, reason));
+            }
             break;
         default:
-            qDebug() << "default";
             if(m_rootObject != 0){
-                qDebug()<< m_rootObject->isWindowType();
-
+                QMetaObject::invokeMethod(m_rootObject, "systrayActivated", Q_ARG(QVariant, reason));
             }
             break;
         }
