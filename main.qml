@@ -2,24 +2,66 @@ import QtQuick 2.5
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import Qt.labs.settings 1.0
+import QtQml.StateMachine 1.0 as DSM
 import "TimeEngine.js" as TimeEngine
 
 Window {
     id: window
-    visible: true
+    visible: false
     width: 600;
     height: 200;
 
     function systrayActivated(reason){
         console.log("systray "+reason)
+        moveWindow();
         window.show()
+    }
+
+    function moveWindow(){
+        window.x = Screen.width - window.width
+        window.y = Qt.platform.os === "osx" ? 0 : Screen.height - window.height
     }
 
     flags:  Qt.Window | Qt.WindowStaysOnTopHint //| Qt.WindowTransparentForInput
 
     Component.onCompleted: {
-        x = Screen.desktopAvailableWidth - width
-        y = Qt.platform.os === "osx" ? 0 : Screen.desktopAvailableHeight - height
+        moveWindow();
+        if(settings.useFirstStartTimeAsArrivalTime){
+            var now = new Date();
+            if(settings.arrivalTimeDay != now.getDay()){
+                settings.arrivalTimeDay = now.getDay()
+                settings.arrivalTimeHours = now.getHours()
+                settings.arrivalTimeMinutes = now.getMinutes()
+                console.log("first start today ... setting arrival time")
+            }
+        }
+    }
+
+    DSM.StateMachine {
+        id: stateMachine
+        initialState: stateAppStarted
+        running: true
+        DSM.State {
+            id: stateAppStarted
+        }
+        DSM.State {
+            id: stateRegularWorkingTime
+        }
+        DSM.State {
+            id: stateAlertEndWorkingTime
+        }
+        DSM.State {
+            id: stateAlertEndWorkingTimeDismissed
+        }
+        DSM.State {
+            id: stateExtraWorkingTime
+        }
+        DSM.State {
+            id: stateAlertEndExtraTime
+        }
+        DSM.State {
+            id: stateAlertEndExtraTimeDismissed
+        }
     }
 
     Settings{
@@ -31,6 +73,10 @@ Window {
         property int maximumWorkingTimeHours: 10
         property int maximumWorkingTimeMinutes: 0
         property bool addBreakTimeToRegularDailyWorkingTime: true
+        property int arrivalTimeHours: 0
+        property int arrivalTimeMinutes: 0
+        property int arrivalTimeDay: 0
+        property bool useFirstStartTimeAsArrivalTime: true
     }
 
     Row{
@@ -53,6 +99,58 @@ Window {
             spacing: 10
             Text {
                 text: calculator.arrivalTime.toLocaleTimeString("hh:mm")+ " Uhr"
+                MouseArea{
+                    anchors.fill: parent
+                    onClicked: {
+                        edit.visible = !edit.visible
+                    }
+                }
+                Rectangle{
+                    id: edit
+                    anchors.fill: parent
+                    color: "white"
+                    visible: false
+                    TextInput{
+                        id:inputHours
+                        anchors.left: parent.left
+                        anchors.right: colon.left
+                        text: calculator.arrivalTime.getHours()
+                        color: acceptableInput ? "green":"red"
+                        inputMask: "90"
+                        font.bold: true
+                        horizontalAlignment: TextInput.AlignHCenter
+                    }
+                    Text{
+                        id: colon
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: ":"
+                    }
+                    TextInput{
+                        id:inputMinutes
+                        anchors.left: colon.right
+                        anchors.right: parent.right
+                        text: calculator.arrivalTime.getMinutes()
+                        color: acceptableInput ? "green":"red"
+                        inputMask: "90"
+                        font.bold: true
+                        horizontalAlignment: TextInput.AlignHCenter
+                    }
+                    Button{
+                        anchors.left: parent.right
+                        text: "Ankunftszeit ändern"
+                        isDefault: true
+                        onClicked: {
+                            if(inputMinutes.acceptableInput && inputHours.acceptableInput){
+                                var hours = parseInt(inputHours.text)
+                                var minutes = parseInt(inputMinutes.text)
+                                settings.arrivalTimeHours = hours
+                                settings.arrivalTimeMinutes = minutes
+                                calculator.update()
+                                edit.visible = false;
+                            }
+                        }
+                    }
+                }
             }
             Text {
                 text: calculator.endTime.toLocaleTimeString("hh:mm")+ " Uhr"
@@ -120,8 +218,11 @@ Window {
         property int extraMinutesToGo: 0
         property int extraHoursToGo: 0
 
+        signal endRegularWorkTime
+        signal endExtraWorkTime
+
         function update(){
-            TimeEngine.update(12,0,0);
+            TimeEngine.update(settings.arrivalTimeHours,settings.arrivalTimeMinutes,0);
             currentProgressRegular = TimeEngine.currentProgressRegular
             currentProgressMax = TimeEngine.currentProgressMax
             regularTimePart = TimeEngine.regularTimePart

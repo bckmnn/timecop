@@ -8,6 +8,7 @@ var diffNowMaxTime;
 var regularTimePart;
 var extraTimePart;
 
+
 function update(hours, minutes, seconds){
     arrivalTime = new Date();
     arrivalTime.setHours(hours,minutes,seconds);
