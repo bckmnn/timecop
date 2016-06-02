@@ -3,6 +3,7 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import Qt.labs.settings 1.0
 import QtQml.StateMachine 1.0 as DSM
+import QtQuick.Dialogs 1.1
 import "TimeEngine.js" as TimeEngine
 
 Window {
@@ -206,6 +207,7 @@ Window {
 
     QtObject{
         id: calculator
+        property bool firstCalcDone: false
         property real currentProgressRegular: 0
         property real currentProgressMax: 0
         property real regularTimePart: 0
@@ -234,6 +236,37 @@ Window {
             regHoursToGo = TimeEngine.diffNowEndTime.hours >= 0 ?  TimeEngine.diffNowEndTime.hours : 0
             extraMinutesToGo = TimeEngine.diffNowMaxTime.minutes >= 0 ?  TimeEngine.diffNowMaxTime.minutes : 0
             extraHoursToGo = TimeEngine.diffNowMaxTime.hours >= 0 ?  TimeEngine.diffNowMaxTime.hours : 0
+            firstCalcDone = true
+        }
+    }
+
+    MessageDialog {
+        property bool showIt: (calculator.regMinutesToGo <= 15 && calculator.regHoursToGo == 0 && calculator.extraHoursToGo > 0 && calculator.extraMinutesToGo > 0) ? true:false
+        id: alertRegularWorkTime
+        title: "Erinnerung"
+        text: "In 15 Minuten endet die reguläre Arbeitszeit!"
+        onShowItChanged: {
+            console.log("alert reg")
+            if(showIt){
+                window.showNormal();
+                window.raise();
+                alertRegularWorkTime.open();
+            }
+        }
+    }
+
+    MessageDialog {
+        property bool showIt: (calculator.firstCalcDone && calculator.extraMinutesToGo <= 15 && calculator.extraHoursToGo == 0) ? true:false
+        id: alertExtraWorkTime
+        title: "Erinnerung"
+        text: "In 15 Minuten erreichen Sie die Höchstarbeitszeit!"
+        onShowItChanged: {
+            console.log("alert max")
+            if(showIt){
+                window.showNormal();
+                window.raise();
+                alertExtraWorkTime.open();
+            }
         }
     }
 
