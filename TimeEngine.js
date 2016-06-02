@@ -67,6 +67,7 @@ function getPercent(start, end, value){
 function getDiff(dateA, dateB){
     var diff_ms = dateA.getTime()-dateB.getTime();
     var sign = Math.sign(diff_ms);
+    diff_ms = Math.abs(diff_ms);
     diff_ms = diff_ms/1000;
     var seconds = Math.floor(diff_ms % 60);
     diff_ms = diff_ms/60;
@@ -82,7 +83,6 @@ function getDiff(dateA, dateB){
         'seconds': seconds,
         'sign': sign
     }
-
     return diff;
 }
 

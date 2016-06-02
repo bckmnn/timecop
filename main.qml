@@ -230,10 +230,10 @@ Window {
             arrivalTime = TimeEngine.arrivalTime
             endTime = TimeEngine.calculatedEndTime
             maxTime = TimeEngine.calculatedMaxTime
-            regMinutesToGo = TimeEngine.diffNowEndTime.minutes <= 0 ?  TimeEngine.diffNowEndTime.minutes*-1 : 0
-            regHoursToGo = TimeEngine.diffNowEndTime.hours <= 0 ?  TimeEngine.diffNowEndTime.hours*-1 : 0
-            extraMinutesToGo = TimeEngine.diffNowMaxTime.minutes <= 0 ?  TimeEngine.diffNowMaxTime.minutes*-1 : 0
-            extraHoursToGo = TimeEngine.diffNowMaxTime.hours <= 0 ?  TimeEngine.diffNowMaxTime.hours*-1 : 0
+            regMinutesToGo = TimeEngine.diffNowEndTime.minutes >= 0 ?  TimeEngine.diffNowEndTime.minutes : 0
+            regHoursToGo = TimeEngine.diffNowEndTime.hours >= 0 ?  TimeEngine.diffNowEndTime.hours : 0
+            extraMinutesToGo = TimeEngine.diffNowMaxTime.minutes >= 0 ?  TimeEngine.diffNowMaxTime.minutes : 0
+            extraHoursToGo = TimeEngine.diffNowMaxTime.hours >= 0 ?  TimeEngine.diffNowMaxTime.hours : 0
         }
     }
 
