@@ -53,8 +53,10 @@ int main(int argc, char *argv[])
             trayIconMenu->addAction(quitAction);
 
             QSystemTrayIcon *trayIcon = new QSystemTrayIcon(rootWindow);
+            QIcon icon(":/icon.png");
+            icon.setIsMask(true);
             //trayIcon->setContextMenu(trayIconMenu);
-            trayIcon->setIcon(QIcon(":/icon.png"));
+            trayIcon->setIcon(icon);
             trayIcon->setToolTip("Click to open");
             trayIcon->setVisible(true);
             QObject::connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), &systrayHelper, SLOT(activatedSystray(QSystemTrayIcon::ActivationReason)));

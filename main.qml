@@ -111,43 +111,61 @@ Window {
                     anchors.fill: parent
                     color: "white"
                     visible: false
-                    TextInput{
-                        id:inputHours
-                        anchors.left: parent.left
-                        anchors.right: colon.left
-                        text: calculator.arrivalTime.getHours()
-                        color: acceptableInput ? "green":"red"
-                        inputMask: "90"
-                        font.bold: true
-                        horizontalAlignment: TextInput.AlignHCenter
-                    }
-                    Text{
-                        id: colon
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: ":"
-                    }
-                    TextInput{
-                        id:inputMinutes
-                        anchors.left: colon.right
-                        anchors.right: parent.right
-                        text: calculator.arrivalTime.getMinutes()
-                        color: acceptableInput ? "green":"red"
-                        inputMask: "90"
-                        font.bold: true
-                        horizontalAlignment: TextInput.AlignHCenter
-                    }
-                    Button{
-                        anchors.left: parent.right
-                        text: "Ankunftszeit ändern"
-                        isDefault: true
-                        onClicked: {
-                            if(inputMinutes.acceptableInput && inputHours.acceptableInput){
-                                var hours = parseInt(inputHours.text)
-                                var minutes = parseInt(inputMinutes.text)
-                                settings.arrivalTimeHours = hours
-                                settings.arrivalTimeMinutes = minutes
-                                calculator.update()
-                                edit.visible = false;
+                    FocusScope{
+                        anchors.fill: parent
+                        focus: edit.visible
+                        TextInput{
+                            id:inputHours
+                            anchors.left: parent.left
+                            anchors.right: colon.left
+                            text: calculator.arrivalTime.getHours()
+                            color: acceptableInput ? "green":"red"
+                            inputMask: "90"
+                            font.bold: true
+                            horizontalAlignment: TextInput.AlignHCenter
+                            focus: true
+                            KeyNavigation.tab: inputMinutes
+                            onFocusChanged: {
+                                if(focus){
+                                    cursorPosition = 0;
+                                }
+                            }
+                        }
+                        Text{
+                            id: colon
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: ":"
+                        }
+                        TextInput{
+                            id:inputMinutes
+                            anchors.left: colon.right
+                            anchors.right: parent.right
+                            text: calculator.arrivalTime.getMinutes()
+                            color: acceptableInput ? "green":"red"
+                            inputMask: "90"
+                            font.bold: true
+                            horizontalAlignment: TextInput.AlignHCenter
+                            KeyNavigation.tab: btnAccept
+                            onFocusChanged: {
+                                if(focus){
+                                    cursorPosition = 0;
+                                }
+                            }
+                        }
+                        Button{
+                            id: btnAccept
+                            anchors.left: parent.right
+                            text: "Ankunftszeit ändern"
+                            isDefault: true
+                            onClicked: {
+                                if(inputMinutes.acceptableInput && inputHours.acceptableInput){
+                                    var hours = parseInt(inputHours.text)
+                                    var minutes = parseInt(inputMinutes.text)
+                                    settings.arrivalTimeHours = hours
+                                    settings.arrivalTimeMinutes = minutes
+                                    calculator.update()
+                                    edit.visible = false;
+                                }
                             }
                         }
                     }
