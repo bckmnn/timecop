@@ -19,4 +19,4 @@ include(deployment.pri)
 HEADERS += \
     systrayhelper.h
 
-QMAKE_POST_LINK += "defaults write /Users/beckmst/Documents/repos/build-timecop-Desktop_Qt_5_5_1_clang_64bit-Release/timecop.app/Contents/Info LSUIElement 1"
+QMAKE_POST_LINK += "defaults write /Users/beckmst/Documents/repos/build-timecop-Desktop_Qt_5_6_0_clang_64bit-Release/timecop.app/Contents/Info LSUIElement 1"
