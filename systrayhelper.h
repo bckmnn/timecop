@@ -10,13 +10,15 @@ class SystrayHelper : public QObject
 {
     Q_OBJECT
     QObject *m_rootObject;
+    QSystemTrayIcon *m_trayicon;
 public:
     explicit SystrayHelper(QObject *parent = 0);
     void setRootWindow(QObject *rootObject);
-
+    void setTrayIcon(QSystemTrayIcon *trayicon);
 signals:
 
 public slots:
+    void setToolTip(QString text);
     void activatedSystray(const QSystemTrayIcon::ActivationReason &reason) {
         switch (reason) {
         case QSystemTrayIcon::DoubleClick:

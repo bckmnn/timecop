@@ -255,6 +255,16 @@ Window {
             extraMinutesToGo = TimeEngine.diffNowMaxTime.minutes >= 0 ?  TimeEngine.diffNowMaxTime.minutes : 0
             extraHoursToGo = TimeEngine.diffNowMaxTime.hours >= 0 ?  TimeEngine.diffNowMaxTime.hours : 0
             firstCalcDone = true
+            var ttip  = "Klicke das Icon um TimeCop zu öffnen\n"
+            if(regularTimePart < 1){
+                ttip += "Reguläre Arbeitszeit noch "+regHoursToGo+"h "+regMinutesToGo +"min\n"
+                ttip += "Du kannst um "+endTime.toLocaleTimeString("hh:mm")+" nach Hause gehen."
+            }else{
+                ttip += "Du machst Überstunden!\n"
+                ttip += "Maximale Arbeitszeit erreicht in "+extraHoursToGo+"h "+extraMinutesToGo +"min\n"
+                ttip += "Du musst spätestens um "+maxTime.toLocaleTimeString("hh:mm")+" nach Hause gehen."
+            }
+            systrayHelper.setToolTip(ttip);
         }
     }
 

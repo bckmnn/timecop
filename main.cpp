@@ -8,6 +8,7 @@
 #include <QDebug>
 #include <QWindow>
 #include <systrayhelper.h>
+#include <QQmlContext>
 
 int main(int argc, char *argv[])
 {
@@ -19,7 +20,7 @@ int main(int argc, char *argv[])
     QSettings::setDefaultFormat(QSettings::IniFormat);
     QSettings::setPath(QSettings::IniFormat,
                        QSettings::UserScope,
-                       QDir::currentPath());
+                       QDir::home().filePath(".timecop"));
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
@@ -27,6 +28,7 @@ int main(int argc, char *argv[])
     QObject *root = 0;
     QWidget *rootWindow = 0;
     SystrayHelper systrayHelper;
+    engine.rootContext()->setContextProperty("systrayHelper", &systrayHelper);
     if (engine.rootObjects().size() > 0)
     {
         root = engine.rootObjects().at(0);
@@ -59,6 +61,7 @@ int main(int argc, char *argv[])
             trayIcon->setIcon(icon);
             trayIcon->setToolTip("Click to open");
             trayIcon->setVisible(true);
+            systrayHelper.setTrayIcon(trayIcon);
             QObject::connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), &systrayHelper, SLOT(activatedSystray(QSystemTrayIcon::ActivationReason)));
 
             trayIcon->show();
