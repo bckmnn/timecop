@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    app.setOrganizationName("Daimler AG RD/DDA");
+    app.setOrganizationName("Daimler AG RD-DDA");
     app.setApplicationName("timecop");
 
     QSettings::setDefaultFormat(QSettings::IniFormat);
@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
     QWidget *rootWindow = 0;
     SystrayHelper systrayHelper;
     engine.rootContext()->setContextProperty("systrayHelper", &systrayHelper);
+    engine.rootContext()->setContextProperty("settingsPath", QDir::home().filePath(".timecop") );
     if (engine.rootObjects().size() > 0)
     {
         root = engine.rootObjects().at(0);
@@ -55,7 +56,7 @@ int main(int argc, char *argv[])
             trayIconMenu->addAction(quitAction);
 
             QSystemTrayIcon *trayIcon = new QSystemTrayIcon(rootWindow);
-            QIcon icon(":/icon.png");
+            QIcon icon(":/trayicon.png");
             icon.setIsMask(true);
             //trayIcon->setContextMenu(trayIconMenu);
             trayIcon->setIcon(icon);

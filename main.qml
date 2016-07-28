@@ -38,30 +38,124 @@ Window {
         }
     }
 
-    DSM.StateMachine {
-        id: stateMachine
-        initialState: stateAppStarted
-        running: true
-        DSM.State {
-            id: stateAppStarted
+    Style{
+        id: style
+    }
+
+    ToolButton {
+        id: tlbSet
+        text: qsTr("🔧")
+        tooltip: "Zeige Einstellungs Fenster"
+        onClicked: {
+            settingsWindow.show();
         }
-        DSM.State {
-            id: stateRegularWorkingTime
+        anchors.margins: 5
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+    }
+    ToolButton {
+        id: tlbQuit
+        text: qsTr("❌")
+        tooltip: "Beende Timecop"
+        onClicked: {
+            Qt.quit()
         }
-        DSM.State {
-            id: stateAlertEndWorkingTime
+        anchors.margins: 5
+        anchors.right: tlbSet.left
+        anchors.bottom: parent.bottom
+    }
+
+
+    SettingsWindow{
+        id: settingsWindow
+        openSettingsBtn.onClicked: {
+            Qt.openUrlExternally("file://"+settingsPath+"/Daimler AG RD-DDA");
         }
-        DSM.State {
-            id: stateAlertEndWorkingTimeDismissed
+        onVisibleChanged: {
+            maxWorkingTime.text = createTimeString(settings.maximumWorkingTimeHours, settings.maximumWorkingTimeMinutes)
+            regWorkingTime.text = createTimeString(settings.regularWorkingTimeHours, settings.regularWorkingTimeMinutes)
+            pauseTime.text = createTimeString(settings.regularBreakTimeHours, settings.regularBreakTimeMinutes)
+            checkBoxAddBreakTime.checked = settings.addBreakTimeToRegularDailyWorkingTime
+            checkBoxUseStartTime.checked = settings.useFirstStartTimeAsArrivalTime
         }
-        DSM.State {
-            id: stateExtraWorkingTime
+
+        checkBoxAddBreakTime.onCheckedStateChanged: {
+            if(checkBoxAddBreakTime.checkedState === Qt.Checked){
+                settings.addBreakTimeToRegularDailyWorkingTime = true
+            }else{
+                settings.addBreakTimeToRegularDailyWorkingTime = false
+            }
+            calculator.update()
         }
-        DSM.State {
-            id: stateAlertEndExtraTime
+        checkBoxUseStartTime.onCheckedStateChanged: {
+            if(checkBoxUseStartTime.checkedState === Qt.Checked){
+                settings.useFirstStartTimeAsArrivalTime = true
+            }else{
+                settings.useFirstStartTimeAsArrivalTime = false
+            }
+            calculator.update()
         }
-        DSM.State {
-            id: stateAlertEndExtraTimeDismissed
+
+        pauseTime.onEditingFinished: {
+            var input = pauseTime.text.split(":")
+            if(input.length == 2){
+                var hours = parseInt(input[0]);
+                var minutes = parseInt(input[1])
+                settings.regularBreakTimeHours = hours
+                settings.regularBreakTimeMinutes = minutes
+                calculator.update()
+                message.text = "Pause wurde auf " + hours + "h und "+minutes +"m gesetzt."
+            }else{
+                message.text = pauseTime.text +" lässt sich nicht teilen " + input.length
+            }
+        }
+
+        regWorkingTime.onEditingFinished: {
+            var input = regWorkingTime.text.split(":")
+            if(input.length == 2){
+                var hours = parseInt(input[0]);
+                var minutes = parseInt(input[1])
+                if(hours > 0 || minutes > 0){
+                    settings.regularWorkingTimeHours = hours
+                    settings.regularWorkingTimeMinutes = minutes
+                    calculator.update()
+                    message.text = "Reguläre Arbeitszeit wurde auf " + hours + "h und "+minutes +"m gesetzt."
+                }else{
+                    message.text = "Reguläre Arbeitszeit muss größer 0 sein. (hh:mm)"
+                }
+            }else{
+                message.text = regWorkingTime.text +" lässt sich nicht teilen " + input.length
+            }
+        }
+
+        maxWorkingTime.onEditingFinished: {
+            var input = maxWorkingTime.text.split(":")
+            if(input.length == 2){
+                var hours = parseInt(input[0]);
+                var minutes = parseInt(input[1])
+                if(hours > 0 || minutes > 0){
+                    settings.maximumWorkingTimeHours = hours
+                    settings.maximumWorkingTimeMinutes = minutes
+                    calculator.update()
+                    message.text = "Maximale Arbeitszeit wurde auf " + hours + "h und "+minutes +"m gesetzt."
+                }else{
+                    message.text = "Maximale Arbeitszeit muss größer 0 sein. (hh:mm)"
+                }
+            }else{
+                message.text = maxWorkingTime.text +" lässt sich nicht teilen " + input.length
+            }
+        }
+    }
+
+    function createTimeString(hours, minutes){
+        return addLeadingZero(hours)+":"+addLeadingZero(minutes);
+    }
+
+    function addLeadingZero(value){
+        if(value < 10){
+            return "0"+value;
+        }else{
+            return ""+value;
         }
     }
 
@@ -250,13 +344,13 @@ Window {
             arrivalTime = TimeEngine.arrivalTime
             endTime = TimeEngine.calculatedEndTime
             maxTime = TimeEngine.calculatedMaxTime
-            regMinutesToGo = TimeEngine.diffNowEndTime.minutes >= 0 ?  TimeEngine.diffNowEndTime.minutes : 0
-            regHoursToGo = TimeEngine.diffNowEndTime.hours >= 0 ?  TimeEngine.diffNowEndTime.hours : 0
-            extraMinutesToGo = TimeEngine.diffNowMaxTime.minutes >= 0 ?  TimeEngine.diffNowMaxTime.minutes : 0
-            extraHoursToGo = TimeEngine.diffNowMaxTime.hours >= 0 ?  TimeEngine.diffNowMaxTime.hours : 0
+            regMinutesToGo = TimeEngine.diffNowEndTime.sign === -1 ?  TimeEngine.diffNowEndTime.minutes : 0
+            regHoursToGo = TimeEngine.diffNowEndTime.sign === -1 ?  TimeEngine.diffNowEndTime.hours : 0
+            extraMinutesToGo = TimeEngine.diffNowMaxTime.sign === -1 ?  TimeEngine.diffNowMaxTime.minutes : 0
+            extraHoursToGo = TimeEngine.diffNowMaxTime.sign === -1 ?  TimeEngine.diffNowMaxTime.hours : 0
             firstCalcDone = true
-            var ttip  = "Klicke das Icon um TimeCop zu öffnen\n"
-            if(regularTimePart < 1){
+            var ttip  = "Klicke das Icon um TimeCop zu öffnen.\n"
+            if(regMinutesToGo > 0 || regHoursToGo > 0){
                 ttip += "Reguläre Arbeitszeit noch "+regHoursToGo+"h "+regMinutesToGo +"min\n"
                 ttip += "Du kannst um "+endTime.toLocaleTimeString("hh:mm")+" nach Hause gehen."
             }else{
@@ -265,6 +359,7 @@ Window {
                 ttip += "Du musst spätestens um "+maxTime.toLocaleTimeString("hh:mm")+" nach Hause gehen."
             }
             systrayHelper.setToolTip(ttip);
+            systrayHelper.setIconColor(currentProgressRegular, currentProgressMax);
         }
     }
 
@@ -272,7 +367,7 @@ Window {
         property bool showIt: (calculator.regMinutesToGo <= 15 && calculator.regHoursToGo == 0 && calculator.extraHoursToGo > 0 && calculator.extraMinutesToGo > 0) ? true:false
         id: alertRegularWorkTime
         title: "Erinnerung"
-        text: "In 15 Minuten endet die reguläre Arbeitszeit!"
+        text: "In "+calculator.regMinutesToGo+" Minuten endet die reguläre Arbeitszeit!"
         onShowItChanged: {
             console.log("alert reg")
             if(showIt){
@@ -287,19 +382,22 @@ Window {
         property bool showIt: (calculator.firstCalcDone && calculator.extraMinutesToGo <= 15 && calculator.extraHoursToGo == 0) ? true:false
         id: alertExtraWorkTime
         title: "Erinnerung"
-        text: "In 15 Minuten erreichen Sie die Höchstarbeitszeit!"
+        text: "In "+calculator.extraMinutesToGo+" Minuten erreichen Sie die Höchstarbeitszeit!"
         onShowItChanged: {
             console.log("alert max")
+            if(alertRegularWorkTime.showIt === true){
+                alertRegularWorkTime.close()
+            }
             if(showIt){
                 window.showNormal();
                 window.raise();
                 alertExtraWorkTime.open();
+            }else{
+                alertExtraWorkTime.close()
             }
         }
     }
 
-    Style{
-        id: style
-    }
+
 
 }

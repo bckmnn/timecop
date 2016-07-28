@@ -35,4 +35,13 @@ QtObject {
         }
     }
 
+    property Component textInputStyle: TextFieldStyle{
+        background: Rectangle {
+            implicitWidth: 100
+            implicitHeight: 24
+            border.color: control.focus ? (control.acceptableInput ? "#00992b":"#d10000" ) : "#7a7a7a"
+            border.width: 1
+        }
+    }
+
 }

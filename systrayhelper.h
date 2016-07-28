@@ -19,6 +19,7 @@ signals:
 
 public slots:
     void setToolTip(QString text);
+    void setIconColor(double percentRegular, double percentExtra);
     void activatedSystray(const QSystemTrayIcon::ActivationReason &reason) {
         switch (reason) {
         case QSystemTrayIcon::DoubleClick:
