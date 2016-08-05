@@ -165,8 +165,8 @@ Window {
         property int regularWorkingTimeMinutes: 0
         property int regularBreakTimeHours: 0
         property int regularBreakTimeMinutes: 50
-        property int maximumWorkingTimeHours: 10
-        property int maximumWorkingTimeMinutes: 0
+        property int maximumWorkingTimeHours: 9
+        property int maximumWorkingTimeMinutes: 59
         property bool addBreakTimeToRegularDailyWorkingTime: true
         property int arrivalTimeHours: 0
         property int arrivalTimeMinutes: 0
