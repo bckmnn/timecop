@@ -204,6 +204,9 @@ Window {
         property int arrivalTimeDay: 0
         property bool useFirstStartTimeAsArrivalTime: true
         property int startTimeOffset: 0
+
+        property bool showExtraTimeToGo: false
+        property bool showRegularTimeToGo: false
     }
 
     Row{
@@ -315,10 +318,18 @@ Window {
         width: (parent.width - progressRegular.x*3) * calculator.regularTimePart
         Text{
             anchors.centerIn: parent
-            property string hours: calculator.regHoursToGo < 10 ? "0"+calculator.regHoursToGo:calculator.regHoursToGo
-            property string minutes: calculator.regMinutesToGo < 10 ? "0"+calculator.regMinutesToGo:calculator.regMinutesToGo
-            text:  hours + ":" + minutes + " ("+(calculator.currentProgressRegular*100).toFixed()+"%)"
+            property string timeToGo: createTimeString(calculator.regHoursToGo, calculator.regMinutesToGo)
+            property string timeDone: createTimeString(calculator.regHoursDone, calculator.regMinutesDone)
+            property string progress: settings.showRegularTimeToGo ? "("+((1-calculator.currentProgressRegular)*100).toFixed()+"%)" : "("+(calculator.currentProgressRegular*100).toFixed()+"%)"
+            property string labelText: settings.showRegularTimeToGo ? timeToGo+" "+progress+" to go" : "already gone "+timeDone+" "+progress
+            text: labelText
             visible: progressExtra.value == 0
+        }
+        MouseArea{
+            anchors.fill: parent
+            onClicked: {
+                settings.showRegularTimeToGo  = !settings.showRegularTimeToGo
+            }
         }
     }
 
@@ -332,9 +343,18 @@ Window {
         width: (parent.width - progressRegular.x*3) * calculator.extraTimePart
         Text{
             anchors.centerIn: parent
-            property string hours: calculator.extraHoursToGo < 10 ? "0"+calculator.extraHoursToGo:calculator.extraHoursToGo
-            property string minutes: calculator.extraMinutesToGo < 10 ? "0"+calculator.extraMinutesToGo:calculator.extraMinutesToGo
-            text:  hours + ":" + minutes + " ("+(calculator.currentProgressMax*100).toFixed()+"%)"
+            property string timeToGo: createTimeString(calculator.extraHoursToGo, calculator.extraMinutesToGo)
+            property string timeDone: createTimeString(calculator.extraHoursDone, calculator.extraMinutesDone)
+            property string progress: settings.showExtraTimeToGo ? "("+100-(calculator.currentProgressMax*100).toFixed()+"%)" : "("+(calculator.currentProgressMax*100).toFixed()+"%)"
+            property string labelText: settings.showExtraTimeToGo ? timeToGo+" to go" : "gone "+timeDone
+            text:  labelText
+            visible: progressRegular.value == 1
+        }
+        MouseArea{
+            anchors.fill: parent
+            onClicked: {
+                settings.showExtraTimeToGo  = !settings.showExtraTimeToGo
+            }
             visible: progressRegular.value == 1
         }
     }
@@ -363,6 +383,10 @@ Window {
         property int regHoursToGo: 0
         property int extraMinutesToGo: 0
         property int extraHoursToGo: 0
+        property int regMinutesDone: 0
+        property int regHoursDone: 0
+        property int extraMinutesDone: 0
+        property int extraHoursDone: 0
 
         signal endRegularWorkTime
         signal endExtraWorkTime
@@ -380,6 +404,10 @@ Window {
             regHoursToGo = TimeEngine.diffNowEndTime.sign === -1 ?  TimeEngine.diffNowEndTime.hours : 0
             extraMinutesToGo = TimeEngine.diffNowMaxTime.sign === -1 ?  TimeEngine.diffNowMaxTime.minutes : 0
             extraHoursToGo = TimeEngine.diffNowMaxTime.sign === -1 ?  TimeEngine.diffNowMaxTime.hours : 0
+            regMinutesDone = TimeEngine.diffNowStartTime.minutes
+            regHoursDone = TimeEngine.diffNowStartTime.hours
+            extraMinutesDone = TimeEngine.diffNowEndTime.sign === 1 ? TimeEngine.diffNowEndTime.minutes:0
+            extraHoursDone = TimeEngine.diffNowEndTime.sign === 1 ? TimeEngine.diffNowEndTime.hours:0
             firstCalcDone = true
             var ttip  = "Klicke das Icon um TimeCop zu öffnen.\n"
             if(regMinutesToGo > 0 || regHoursToGo > 0){

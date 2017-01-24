@@ -5,6 +5,7 @@ var calculatedEndTime;
 var calculatedMaxTime;
 var diffNowEndTime;
 var diffNowMaxTime;
+var diffNowStartTime;
 var regularTimePart;
 var extraTimePart;
 
@@ -42,6 +43,7 @@ function update(hours, minutes, seconds){
 
     diffNowEndTime = getDiff(now,calculatedEndTime);
     diffNowMaxTime = getDiff(now,calculatedMaxTime);
+    diffNowStartTime = getDiff(now,arrivalTime);
 
     if(diffNowEndTime.sign < 0){
         currentProgressRegular = getPercent(arrivalTime,calculatedEndTime,now);
