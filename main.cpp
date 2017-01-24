@@ -14,13 +14,17 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+    const QString app_name("timecop");
+    const QString app_version("1.1");
+    const QString app_settings_dir(QDir::home().filePath(".timecop"));
+
     app.setOrganizationName("Daimler AG RD-DDA");
-    app.setApplicationName("timecop");
+    app.setApplicationName(app_name);
 
     QSettings::setDefaultFormat(QSettings::IniFormat);
     QSettings::setPath(QSettings::IniFormat,
                        QSettings::UserScope,
-                       QDir::home().filePath(".timecop"));
+                       app_settings_dir);
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
@@ -29,7 +33,12 @@ int main(int argc, char *argv[])
     QWidget *rootWindow = 0;
     SystrayHelper systrayHelper;
     engine.rootContext()->setContextProperty("systrayHelper", &systrayHelper);
-    engine.rootContext()->setContextProperty("settingsPath", QDir::home().filePath(".timecop") );
+
+    engine.rootContext()->setContextProperty("app_name",  app_name);
+    engine.rootContext()->setContextProperty("app_version",  app_version);
+    engine.rootContext()->setContextProperty("app_settings_dir",  app_settings_dir);
+
+
     if (engine.rootObjects().size() > 0)
     {
         root = engine.rootObjects().at(0);

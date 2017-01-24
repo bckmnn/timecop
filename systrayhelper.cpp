@@ -1,5 +1,6 @@
 #include "systrayhelper.h"
 #include <QPixmap>
+#include <QBitmap>
 #include <QPainter>
 
 void SystrayHelper::setRootWindow(QObject *rootObject)
@@ -26,7 +27,7 @@ void SystrayHelper::setIconColor(double percentRegular, double percentExtra)
     paint->drawRect(480,400,500,120);
 
     if(percentExtra > 0){
-        paint->setBrush(*(new QColor(255,255,127,255)));
+        paint->setBrush(*(new QColor(255,0,0,255)));
         paint->drawRect(20,450,460*percentExtra,100);
     }else{
         paint->setBrush(*(new QColor(0,200,127,255)));
@@ -34,7 +35,9 @@ void SystrayHelper::setIconColor(double percentRegular, double percentExtra)
     }
 
     delete paint;
+
     QIcon icon(iconPixmap);
+
     icon.setIsMask(true);
     m_trayicon->setIcon(icon);
 }

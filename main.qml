@@ -2,9 +2,9 @@ import QtQuick 2.5
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import Qt.labs.settings 1.0
-import QtQml.StateMachine 1.0 as DSM
 import QtQuick.Dialogs 1.1
 import "TimeEngine.js" as TimeEngine
+import "AlertEngine.js" as AlertEngine
 
 Window {
     id: window
@@ -30,11 +30,20 @@ Window {
         if(settings.useFirstStartTimeAsArrivalTime){
             var now = new Date();
             if(settings.arrivalTimeDay != now.getDay()){
-                settings.arrivalTimeDay = now.getDay()
-                settings.arrivalTimeHours = now.getHours()
-                settings.arrivalTimeMinutes = now.getMinutes()
                 console.log("first start today ... setting arrival time")
+                if(settings.startTimeOffset !== 0){
+                    console.log("offset is minus "+ settings.startTimeOffset + " minutes")
+                    now.setMinutes(now.getMinutes()-settings.startTimeOffset)
+                    settings.arrivalTimeDay = now.getDay()
+                    settings.arrivalTimeHours = now.getHours()
+                    settings.arrivalTimeMinutes = now.getMinutes()
+                }else{
+                    settings.arrivalTimeDay = now.getDay()
+                    settings.arrivalTimeHours = now.getHours()
+                    settings.arrivalTimeMinutes = now.getMinutes()
+                }
             }
+            console.log(AlertEngine.start());
         }
     }
 
@@ -53,30 +62,24 @@ Window {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
     }
-    ToolButton {
-        id: tlbQuit
-        text: qsTr("❌")
-        tooltip: "Beende Timecop"
-        onClicked: {
-            Qt.quit()
-        }
-        anchors.margins: 5
-        anchors.right: tlbSet.left
-        anchors.bottom: parent.bottom
-    }
-
 
     SettingsWindow{
         id: settingsWindow
-        openSettingsBtn.onClicked: {
-            Qt.openUrlExternally("file://"+settingsPath+"/Daimler AG RD-DDA");
+
+        quitButton.onClicked: {
+            Qt.quit()
         }
+        openSettingsBtn.onClicked: {
+            Qt.openUrlExternally("file://"+app_settings_dir+"/Daimler AG RD-DDA");
+        }
+
         onVisibleChanged: {
             maxWorkingTime.text = createTimeString(settings.maximumWorkingTimeHours, settings.maximumWorkingTimeMinutes)
             regWorkingTime.text = createTimeString(settings.regularWorkingTimeHours, settings.regularWorkingTimeMinutes)
             pauseTime.text = createTimeString(settings.regularBreakTimeHours, settings.regularBreakTimeMinutes)
             checkBoxAddBreakTime.checked = settings.addBreakTimeToRegularDailyWorkingTime
             checkBoxUseStartTime.checked = settings.useFirstStartTimeAsArrivalTime
+            offsetUseStartTime.text = settings.startTimeOffset
         }
 
         checkBoxAddBreakTime.onCheckedStateChanged: {
@@ -96,53 +99,81 @@ Window {
             calculator.update()
         }
 
-        pauseTime.onEditingFinished: {
-            var input = pauseTime.text.split(":")
-            if(input.length == 2){
-                var hours = parseInt(input[0]);
-                var minutes = parseInt(input[1])
-                settings.regularBreakTimeHours = hours
-                settings.regularBreakTimeMinutes = minutes
-                calculator.update()
-                message.text = "Pause wurde auf " + hours + "h und "+minutes +"m gesetzt."
+        pauseTime.onTextChanged: {
+            if(pauseTime.acceptableInput){
+                var input = pauseTime.text.split(":")
+                if(input.length == 2){
+                    var hours = parseInt(input[0]);
+                    var minutes = parseInt(input[1])
+                    settings.regularBreakTimeHours = hours
+                    settings.regularBreakTimeMinutes = minutes
+                    calculator.update()
+                    message.text = "Pause wurde auf " + hours + "h und "+minutes +"m gesetzt."
+                }else{
+                    message.text = pauseTime.text +" lässt sich nicht teilen " + input.length
+                }
             }else{
-                message.text = pauseTime.text +" lässt sich nicht teilen " + input.length
+                message.text = "Bitte gebe eine gültige Pausenzeit im Format hh:mm ein."
             }
         }
 
-        regWorkingTime.onEditingFinished: {
-            var input = regWorkingTime.text.split(":")
-            if(input.length == 2){
-                var hours = parseInt(input[0]);
-                var minutes = parseInt(input[1])
-                if(hours > 0 || minutes > 0){
-                    settings.regularWorkingTimeHours = hours
-                    settings.regularWorkingTimeMinutes = minutes
-                    calculator.update()
-                    message.text = "Reguläre Arbeitszeit wurde auf " + hours + "h und "+minutes +"m gesetzt."
+        regWorkingTime.onTextChanged: {
+            if(regWorkingTime.acceptableInput){
+                var input = regWorkingTime.text.split(":")
+                if(input.length == 2){
+                    var hours = parseInt(input[0]);
+                    var minutes = parseInt(input[1])
+                    if(hours > 0 || minutes > 0){
+                        settings.regularWorkingTimeHours = hours
+                        settings.regularWorkingTimeMinutes = minutes
+                        calculator.update()
+                        message.text = "Reguläre Arbeitszeit wurde auf " + hours + "h und "+minutes +"m gesetzt."
+                    }else{
+                        message.text = "Reguläre Arbeitszeit muss größer 0 sein. (hh:mm)"
+                    }
                 }else{
-                    message.text = "Reguläre Arbeitszeit muss größer 0 sein. (hh:mm)"
+                    message.text = regWorkingTime.text +" lässt sich nicht teilen " + input.length
                 }
             }else{
-                message.text = regWorkingTime.text +" lässt sich nicht teilen " + input.length
+                message.text = "Bitte gebe eine gültige Reguläre Arbeitszeit im Format hh:mm ein."
             }
         }
 
-        maxWorkingTime.onEditingFinished: {
-            var input = maxWorkingTime.text.split(":")
-            if(input.length == 2){
-                var hours = parseInt(input[0]);
-                var minutes = parseInt(input[1])
-                if(hours > 0 || minutes > 0){
-                    settings.maximumWorkingTimeHours = hours
-                    settings.maximumWorkingTimeMinutes = minutes
-                    calculator.update()
-                    message.text = "Maximale Arbeitszeit wurde auf " + hours + "h und "+minutes +"m gesetzt."
+        maxWorkingTime.onTextChanged: {
+            if(maxWorkingTime.acceptableInput){
+                var input = maxWorkingTime.text.split(":")
+                if(input.length == 2){
+                    var hours = parseInt(input[0]);
+                    var minutes = parseInt(input[1])
+                    if(hours > 0 || minutes > 0){
+                        settings.maximumWorkingTimeHours = hours
+                        settings.maximumWorkingTimeMinutes = minutes
+                        calculator.update()
+                        message.text = "Maximale Arbeitszeit wurde auf " + hours + "h und "+minutes +"m gesetzt."
+                    }else{
+                        message.text = "Maximale Arbeitszeit muss größer 0 sein. (hh:mm)"
+                    }
                 }else{
-                    message.text = "Maximale Arbeitszeit muss größer 0 sein. (hh:mm)"
+                    message.text = maxWorkingTime.text +" lässt sich nicht teilen " + input.length
                 }
             }else{
-                message.text = maxWorkingTime.text +" lässt sich nicht teilen " + input.length
+                message.text = "Bitte gebe eine gültige Maximale Arbeitszeit im Format hh:mm ein."
+            }
+        }
+
+        offsetUseStartTime.onTextChanged: {
+            if(offsetUseStartTime.acceptableInput){
+                var input = offsetUseStartTime.text
+                var minutes = parseInt(input)
+                    if(minutes !== NaN ){
+                        settings.startTimeOffset = minutes
+                        calculator.update()
+                        message.text = "Startzeit Offset wurde "+minutes +" Minuten gesetzt. Erst aktiv beim nächsten Start."
+                    }else{
+                        message.text = "Bitte gebe ein gültiges Startzeit Offset in Minuten an."
+                    }
+            }else{
+                message.text = "Bitte gebe ein gültiges Startzeit Offset in Minuten an."
             }
         }
     }
@@ -172,6 +203,7 @@ Window {
         property int arrivalTimeMinutes: 0
         property int arrivalTimeDay: 0
         property bool useFirstStartTimeAsArrivalTime: true
+        property int startTimeOffset: 0
     }
 
     Row{
@@ -308,7 +340,7 @@ Window {
     }
 
     Timer{
-        interval: 1000*30
+        interval: 1000*20
         repeat: true
         running: true
         triggeredOnStart: true
