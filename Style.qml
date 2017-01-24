@@ -11,7 +11,7 @@ QtObject {
                     border.color: "gray"
                     border.width: 1
                     implicitWidth: 200
-                    implicitHeight: 24
+                    implicitHeight: 50
                 }
         progress: Rectangle {
             radius: 3
@@ -26,7 +26,7 @@ QtObject {
                     border.color: "gray"
                     border.width: 1
                     implicitWidth: 200
-                    implicitHeight: 24
+                    implicitHeight: 50
                 }
         progress: Rectangle {
             radius: 3

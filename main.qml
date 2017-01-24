@@ -10,7 +10,7 @@ Window {
     id: window
     visible: false
     width: 600;
-    height: 200;
+    height: 160;
 
     function systrayActivated(reason){
         console.log("systray "+reason)
@@ -211,7 +211,7 @@ Window {
 
     Row{
         x: 10
-        y: 50
+        y: 75
         spacing: 20
         Column{
             spacing: 10
