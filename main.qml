@@ -321,7 +321,7 @@ Window {
             property string timeToGo: createTimeString(calculator.regHoursToGo, calculator.regMinutesToGo)
             property string timeDone: createTimeString(calculator.regHoursDone, calculator.regMinutesDone)
             property string progress: settings.showRegularTimeToGo ? "("+((1-calculator.currentProgressRegular)*100).toFixed()+"%)" : "("+(calculator.currentProgressRegular*100).toFixed()+"%)"
-            property string labelText: settings.showRegularTimeToGo ? timeToGo+" "+progress+" to go" : "already gone "+timeDone+" "+progress
+            property string labelText: settings.showRegularTimeToGo ? timeToGo+"h "+progress+" kommen noch" : timeDone+"h "+progress+" geschafft"
             text: labelText
             visible: progressExtra.value == 0
         }
@@ -346,7 +346,7 @@ Window {
             property string timeToGo: createTimeString(calculator.extraHoursToGo, calculator.extraMinutesToGo)
             property string timeDone: createTimeString(calculator.extraHoursDone, calculator.extraMinutesDone)
             property string progress: settings.showExtraTimeToGo ? "("+100-(calculator.currentProgressMax*100).toFixed()+"%)" : "("+(calculator.currentProgressMax*100).toFixed()+"%)"
-            property string labelText: settings.showExtraTimeToGo ? timeToGo+" to go" : "gone "+timeDone
+            property string labelText: settings.showExtraTimeToGo ? timeToGo+"h to go" : timeDone+"h gone!"
             text:  labelText
             visible: progressRegular.value == 1
         }
